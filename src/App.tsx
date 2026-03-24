@@ -20,7 +20,9 @@ import {
   Droplets,
   ShoppingCart,
   Building2,
-  MapPin
+  MapPin,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -43,6 +45,69 @@ export default function App() {
   const headerRef = useRef<HTMLElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
+
+  const galleryImages = [
+    "https://cdn1.pswex.com.br/wp-content/uploads/sites/51/2025/08/03004801/instalacao-de-ar-condiciona-em-salao-de-beleza-Climatiza-sorocaba-e-regiao.png",
+    "https://cdn1.pswex.com.br/wp-content/uploads/sites/51/2025/08/03004758/instalacao-de-ar-condicionado-em-sorocaba-sp-casa-manutecao-instalacao-de-arcondicionado-sorocaba-sp-climatiza-empresas-pmoc-e1754412594892.jpeg",
+    "https://cdn1.pswex.com.br/wp-content/uploads/sites/51/2025/08/03004800/Ar-condicionado-instalado-em-ambiente-interno-em-cima-de-uma-porta-Climatiza-sorocaba-e-regiao.png",
+    "https://cdn1.pswex.com.br/wp-content/uploads/sites/51/2025/08/03004800/Instalacao-completa-de-ar-condicionado-fixado-em-parede-externa-Climatiza-sorocaba-e-regiao.png"
+  ];
+
+  useEffect(() => {
+    // Sequential zoom animation for gallery
+    const interval = setInterval(() => {
+      setActiveGalleryIndex((prev) => (prev + 1) % galleryImages.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // GSAP animation for the active gallery image
+    const activeImg = document.querySelector(`.gallery-img-${activeGalleryIndex}`);
+    if (activeImg) {
+      gsap.to(activeImg, {
+        scale: 1.05,
+        duration: 2,
+        yoyo: true,
+        repeat: 1,
+        ease: "sine.inOut"
+      });
+
+      // Scroll into view on mobile
+      if (window.innerWidth < 640) {
+        activeImg.parentElement?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+      }
+    }
+  }, [activeGalleryIndex]);
+
+  useEffect(() => {
+    if (selectedImageIndex !== null) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  }, [selectedImageIndex]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedImageIndex(null);
+      if (e.key === 'ArrowLeft' && selectedImageIndex !== null) {
+        setSelectedImageIndex((prev) => (prev! - 1 + galleryImages.length) % galleryImages.length);
+      }
+      if (e.key === 'ArrowRight' && selectedImageIndex !== null) {
+        setSelectedImageIndex((prev) => (prev! + 1) % galleryImages.length);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedImageIndex]);
 
   useEffect(() => {
     // Hero Entrance
@@ -161,7 +226,7 @@ export default function App() {
             href={WHATSAPP_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden md:flex bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 items-center gap-2"
+            className="hidden md:flex bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 items-center gap-2 animate-pulse-whatsapp"
           >
             <Phone className="animate-float-icon" size={16} />
             <span>Orçamento Grátis</span>
@@ -205,7 +270,7 @@ export default function App() {
             href={WHATSAPP_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-blue-600 transition-all shadow-lg shadow-primary/20 text-sm"
+            className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-blue-600 transition-all shadow-lg shadow-primary/20 text-sm animate-pulse-whatsapp"
           >
             <Phone className="animate-float-icon" size={18} />
             WhatsApp
@@ -227,7 +292,7 @@ export default function App() {
           </div>
 
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <div className="max-w-2xl hero-content">
+            <div className="max-w-2xl hero-content mt-16 sm:mt-20">
               <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/30 text-secondary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
                 <AirVent className="animate-float-icon" size={14} />
                 Especialistas em Conforto Térmico
@@ -241,7 +306,7 @@ export default function App() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <a 
                   href={WHATSAPP_LINK}
-                  className="bg-primary text-white px-8 py-4 rounded-xl font-bold text-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 shadow-xl shadow-primary/30"
+                  className="bg-primary text-white px-8 py-4 rounded-xl font-bold text-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 shadow-xl shadow-primary/30 animate-pulse-whatsapp"
                 >
                   Falar com Especialista
                   <ArrowRight className="animate-float-icon" size={20} />
@@ -514,6 +579,97 @@ export default function App() {
           </div>
         </section>
 
+        {/* Gallery Section */}
+        <section className="py-10 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white overflow-hidden">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-10 sm:mb-16 scroll-reveal">
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Nossos Trabalhos</h2>
+              <p className="text-slate-600 max-w-2xl mx-auto text-lg">
+                Confira alguns de nossos projetos realizados com excelência e cuidado.
+              </p>
+            </div>
+
+            <div className="flex overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 pb-4 sm:pb-0 snap-x snap-mandatory no-scrollbar">
+              {galleryImages.map((img, idx) => (
+                <div 
+                  key={idx}
+                  onClick={() => setSelectedImageIndex(idx)}
+                  className={cn(
+                    "relative flex-shrink-0 w-[85vw] sm:w-auto aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer transition-all duration-700 snap-center scroll-reveal",
+                    activeGalleryIndex === idx ? "scale-[1.02] ring-4 ring-primary/20" : "scale-100"
+                  )}
+                >
+                  <img 
+                    src={img} 
+                    alt={`Trabalho Climatiza ${idx + 1}`} 
+                    className={cn(
+                      "w-full h-full object-cover object-top gallery-img",
+                      `gallery-img-${idx}`
+                    )}
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-6">
+                    <span className="text-white font-bold">Ver Ampliado</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Lightbox Modal */}
+        {selectedImageIndex !== null && (
+          <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-300">
+            <button 
+              onClick={() => setSelectedImageIndex(null)}
+              className="absolute top-6 right-6 text-white hover:text-primary transition-colors z-[110]"
+            >
+              <X size={40} />
+            </button>
+
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImageIndex((prev) => (prev! - 1 + galleryImages.length) % galleryImages.length);
+              }}
+              className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 text-white hover:text-primary transition-colors z-[110] bg-white/10 p-2 rounded-full backdrop-blur-sm"
+            >
+              <ChevronLeft size={40} />
+            </button>
+
+            <div className="relative max-w-5xl w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+              <img 
+                src={galleryImages[selectedImageIndex]} 
+                alt="Trabalho Ampliado" 
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImageIndex((prev) => (prev! + 1) % galleryImages.length);
+              }}
+              className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 text-white hover:text-primary transition-colors z-[110] bg-white/10 p-2 rounded-full backdrop-blur-sm"
+            >
+              <ChevronRight size={40} />
+            </button>
+
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+              {galleryImages.map((_, i) => (
+                <div 
+                  key={i}
+                  className={cn(
+                    "w-2 h-2 rounded-full transition-all",
+                    selectedImageIndex === i ? "bg-primary w-8" : "bg-white/30"
+                  )}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* CTA Section */}
         <section id="contato" className="py-10 sm:py-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-5xl mx-auto bg-primary rounded-[2rem] p-8 sm:p-16 text-center text-white relative overflow-hidden scroll-reveal">
@@ -532,7 +688,7 @@ export default function App() {
                   href={WHATSAPP_LINK}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto bg-white text-primary px-10 py-5 rounded-2xl font-bold text-xl hover:scale-105 transition-transform shadow-2xl flex items-center justify-center gap-3"
+                  className="w-full sm:w-auto bg-white text-primary px-10 py-5 rounded-2xl font-bold text-xl hover:scale-105 transition-transform shadow-2xl flex items-center justify-center gap-3 animate-pulse-whatsapp"
                 >
                   <Phone className="animate-float-icon" size={24} />
                   Chamar no WhatsApp
