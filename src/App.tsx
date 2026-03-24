@@ -75,15 +75,6 @@ export default function App() {
         repeat: 1,
         ease: "sine.inOut"
       });
-
-      // Scroll into view on mobile
-      if (window.innerWidth < 640) {
-        activeImg.parentElement?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
-        });
-      }
     }
   }, [activeGalleryIndex]);
 
